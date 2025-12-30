@@ -62,6 +62,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "docs: add OctoAcme project management README in docs/"
+          base: main
           branch: docs/add-octoacme-readme
           title: "docs: add OctoAcme project management README"
           body: |
