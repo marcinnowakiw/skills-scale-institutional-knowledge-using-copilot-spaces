@@ -1,0 +1,71 @@
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  create-readme-pr:
+    if: >
+      github.event.issue.number == 2 &&
+      contains(github.event.comment.body, '/create-readme-pr')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b docs/add-octoacme-readme
+
+      - name: Add README in docs/
+        run: |
+          mkdir -p docs
+          cat > docs/README.md <<'README'
+          # OctoAcme Project Management Docs
+
+          ## Overview
+
+          This documentation set captures the project management processes, roles, and artifacts used by OctoAcme to ensure effective delivery, clear ownership, and continuous improvement.
+
+          OctoAcme follows an iterative lifecycle covering Initiation, Planning, Execution, Release, and Continuous Improvement. The approach emphasizes delivering small, testable increments that maximize customer value, measuring outcomes to inform decisions, and preserving psychological safety for learning. Core roles include Product Managers (define outcomes and success metrics), Project Managers (coordinate delivery, risks, and communication), Developers (implement and test), QA (validate acceptance), and Stakeholders (approve and guide priority). Workflows rely on a project board pattern for status (Backlog → Ready → In Progress → In Review → QA → Done), small PRs linked to issues and acceptance criteria, and explicit risk/dependency tracking.
+
+          Communication and cadence are standardized: daily standups, weekly PM/PdM syncs, sprint demos/reviews, and stakeholder updates. QA is integrated into CI with tests and security scans, manual acceptance testing when needed, and pre-release smoke tests and rollback plans.
+
+          ## Process Documents
+
+          - octoacme-project-management-overview.md
+          - octoacme-project-initiation.md
+          - octoacme-project-planning.md
+          - octoacme-execution-and-tracking.md
+          - octoacme-risks-and-communication.md
+          - octoacme-release-and-deployment.md
+          - octoacme-retrospective-and-continuous-improvement.md
+          - octoacme-roles-and-personas.md
+
+          Refer to each file for templates, checklists, and detailed instructions.
+          README
+
+      - name: Commit changes
+        run: |
+          git add docs/README.md
+          git commit -m "docs: add OctoAcme project management README in docs/" || echo "no changes to commit"
+
+      - name: Push branch
+        run: |
+          git push --set-upstream origin docs/add-octoacme-readme
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "docs: add OctoAcme project management README in docs/"
+          branch: docs/add-octoacme-readme
+          title: "docs: add OctoAcme project management README"
+          body: |
+            Adds docs/README.md as a central entrypoint for OctoAcme project management docs.
+
+            Closes #2
+          reviewers: marcinnowakiw
